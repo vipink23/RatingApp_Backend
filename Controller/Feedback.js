@@ -37,7 +37,7 @@ const AddFeedBack = async (req, res) => {
       rating: RatingArray,
       user: user,
       image: image ? image.filename : "",
-      date: date ,
+      date: date,
       response: response,
     };
     console.log(fd, "fddd");
@@ -59,6 +59,7 @@ const GetAllFeedBack = async (req, res) => {
       rating: fd.rating,
       UserId: fd.user._id,
       User: fd.user.firstname + " " + fd.user.lastname,
+      ratingDate: fd.date,
       image:
         fd.image === ""
           ? ""
@@ -73,7 +74,7 @@ const UpdateFeedBack = async (req, res) => {
   try {
     const { feedback, response, date } = req.body;
     console.log(req.body);
-    
+
     const image = req.file;
     const { id } = req.params;
     const existfeedback = await FeedbackModel.findById(id);
@@ -98,8 +99,8 @@ const UpdateFeedBack = async (req, res) => {
       feedback: feedback,
       rating: RatingArray,
       image: image ? image.filename : existfeedback.image,
-      response : response,
-      date: date
+      response: response,
+      date: date,
     };
 
     const fd = await FeedbackModel.findByIdAndUpdate(id, updatedFeedback, {
@@ -152,49 +153,54 @@ const deleteFeedback = async (req, res) => {
       existingFeedback.image
     );
 
-      if (existingFeedback.image) {
-        // Check if file exists
-        if (fs.existsSync(imagePath)) {
-          // Delete the image
-          fs.unlinkSync(imagePath);
-        } else {
-          console.log("Image file does not exist, skipping file deletion.");
-        }
+    if (existingFeedback.image) {
+      // Check if file exists
+      if (fs.existsSync(imagePath)) {
+        // Delete the image
+        fs.unlinkSync(imagePath);
+      } else {
+        console.log("Image file does not exist, skipping file deletion.");
       }
-    
-      // Now delete the feedback
-      await FeedbackModel.findByIdAndDelete(id);
-    
-      return res.status(200).json({ resText: "Feedback deleted successfully", status: true });
+    }
+
+    // Now delete the feedback
+    await FeedbackModel.findByIdAndDelete(id);
+
+    return res
+      .status(200)
+      .json({ resText: "Feedback deleted successfully", status: true });
   } catch (error) {
     return res.status(500).json({ message: "Internal Server Error" });
   }
-}
+};
 
-const GetFeedbackById = async (req, res)=>{
-  const {id} = req.params
+const GetFeedbackById = async (req, res) => {
+  const { id } = req.params;
   try {
-    const feedback =  await FeedbackModel.findById(id);
-    const fdback ={
+    const feedback = await FeedbackModel.findById(id);
+    const fdback = {
       Id: feedback._id,
       Feedback: feedback.feedback,
       rating: feedback.rating,
       UserId: feedback.user._id,
-      reviewDate:feedback.date,
-      response : feedback.response,
+      reviewDate: feedback.date,
+      response: feedback.response,
       image:
-      feedback.image === ""
-        ? ""
-        : `http://localhost:${port}/uploads/${feedback?.image ?? ""}`
-    }
+        feedback.image === ""
+          ? ""
+          : `http://localhost:${port}/uploads/${feedback?.image ?? ""}`,
+    };
     // console.log(feedback);
-    res.status(200).json(fdback)
-    
+    res.status(200).json(fdback);
   } catch (error) {
-    console.log(error,'err');
-    
+    console.log(error, "err");
   }
-}
+};
 
-
-export default { AddFeedBack, GetAllFeedBack, UpdateFeedBack, deleteFeedback ,GetFeedbackById };
+export default {
+  AddFeedBack,
+  GetAllFeedBack,
+  UpdateFeedBack,
+  deleteFeedback,
+  GetFeedbackById,
+};
